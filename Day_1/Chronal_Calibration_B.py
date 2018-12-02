@@ -106,9 +106,8 @@ def find_repeated_position(start_frequency, iterations):
                 return result_frequency
             else:
                 visited_positions.append(result_frequency)
-
-            visited_positions.sort(key=int)
-            print(visited_positions)
+        # visited_positions.sort(key=int)
+        # print(visited_positions)
 
 
 def process_data(data):
