@@ -96,16 +96,20 @@ OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTP
 #######################################################################################################################
 def find_repeated_position(start_frequency, iterations):
     result_frequency = start_frequency
-    visited_positions = [start_frequency]
+    visited_positions = set([start_frequency])
+    prev_len = 0
 
     while True:
         for iteration in iterations:
             result_frequency += iteration
 
-            if result_frequency in visited_positions:
+            visited_positions.add(result_frequency)
+            new_len = len(visited_positions)
+
+            if new_len == prev_len:
                 return result_frequency
-            else:
-                visited_positions.append(result_frequency)
+
+            prev_len = new_len
 
 
 def process_data(data):
