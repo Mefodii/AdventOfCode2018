@@ -34,6 +34,26 @@
 # appears exactly three times. Multiplying these together produces a checksum of 4 * 3 = 12.
 #
 # What is the checksum for your list of box IDs?
+#
+# --- Part Two ---
+# Confident that your list of box IDs is complete, you're ready to find the boxes full of prototype fabric.
+#
+# The boxes will have IDs which differ by exactly one character at the same position in both strings. For example, given
+# the following box IDs:
+#
+# abcde
+# fghij
+# klmno
+# pqrst
+# fguij
+# axcye
+# wvxyz
+#
+# The IDs abcde and axcye are close, but they differ by two characters (the second and fourth). However, the IDs fghij
+# and fguij differ by exactly one character, the third (h and u). Those must be the correct boxes.
+#
+# What letters are common between the two correct box IDs? (In the example above, this is found by removing the
+# differing character from either ID, producing fgij.)
 
 #######################################################################################################################
 # IMPORTS
@@ -60,27 +80,32 @@ OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTP
 #######################################################################################################################
 # Root function
 #######################################################################################################################
-def calculate_repeated(data):
-    two = 0
-    three = 0
+def compare_letters(str1, str2):
+    diff = 0
+    for i in range(len(str1)):
+        if not str1[i] == str2[i]:
+            diff += 1
 
-    for record in data:
-        letters = set(record)
-        two_found = False
-        three_found = False
-        for letter in letters:
-            if not two_found and record.count(letter) == 2:
-                two_found = True
+    return diff
 
-            if not three_found and record.count(letter) == 3:
-                three_found = True
 
-        if two_found:
-            two += 1
-        if three_found:
-            three += 1
+def remove_diff_letter(str1, str2):
+    result = ""
+    for i in range(len(str1)):
+        if str1[i] == str2[i]:
+            result += str1[i]
 
-    return {"Two": two, "Three": three}
+    return result
+
+
+def find_one_letter_diff_record(data):
+    for i in range(len(data) - 1):
+        for j in range(i + 1, len(data)):
+            different_letters_count = compare_letters(data[i], data[j])
+            if different_letters_count == 1:
+                return remove_diff_letter(data[i], data[j])
+
+    return None
 
 
 #######################################################################################################################
@@ -91,10 +116,9 @@ def __main__():
     runner = Runner(INPUT_PATH, OUTPUT_PATH, debug=True)
 
     # Your code goes here
-    repeats = calculate_repeated(runner.input_data)
-    checksum = repeats["Two"] * repeats["Three"]
+    result = find_one_letter_diff_record(runner.input_data)
 
-    runner.finish([checksum])
+    runner.finish([result])
 
 
 #######################################################################################################################
