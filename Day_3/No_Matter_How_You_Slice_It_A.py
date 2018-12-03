@@ -65,8 +65,10 @@ from utils.helpers import Runner
 PARENT_FOLDER_NAME = "Day_3"
 FILES_NAME = "io"
 INPUT_FILE = "input.txt"
+SAMPLE_FILE = "sample.txt"
 OUTPUT_FILE = os.path.basename(__file__)[:-3] + "_output.txt"
 
+SAMPLE_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, SAMPLE_FILE])
 INPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, INPUT_FILE])
 OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTPUT_FILE])
 
@@ -74,6 +76,18 @@ OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTP
 #######################################################################################################################
 # Root function
 #######################################################################################################################
+class Overlap:
+    def __init__(self, start_x, end_x, start_y, end_y):
+        self.start_x = start_x
+        self.end_x = end_x
+
+        self.start_y = start_y
+        self.end_y = end_y
+
+    def __str__(self):
+        return str([[self.start_x, self.start_y], [self.end_x, self.end_y]])
+
+
 class Claim:
     def __init__(self, id_nr, cut_left, cut_top, width, height):
         self.id = id_nr
@@ -88,22 +102,51 @@ class Claim:
         self.start_y = cut_top
         self.end_y = cut_top + height - 1
 
-    def is_overlap(self, claim):
+    def overlap(self, claim):
         if self.start_x <= claim.start_x <= self.end_x:
             if self.start_y <= claim.start_y <= self.end_y:
-                return True
+                x1, x2, y1, y2 = claim.start_x, self.end_x, claim.start_y, self.end_y
+                if claim.end_x < self.end_x:
+                    x2 = claim.end_x
+                if claim.end_y < self.end_y:
+                    y2 = claim.end_y
+
+                return Overlap(x1, x2, y1, y2)
             if self.start_y <= claim.end_y <= self.end_y:
-                return True
+                x1, x2, y1, y2 = claim.start_x, self.end_x, self.start_y, claim.end_y
+                if claim.end_x < self.end_x:
+                    x2 = claim.end_x
+
+                return Overlap(x1, x2, y1, y2)
         if self.start_x <= claim.end_x <= self.end_x:
             if self.start_y <= claim.start_y <= self.end_y:
-                return True
-            if self.start_y <= claim.end_y <= self.end_y:
-                return True
+                x1, x2, y1, y2 = self.start_x, claim.end_x, claim.start_y, self.end_y
+                if claim.end_y < self.end_y:
+                    y2 = claim.end_y
 
-        return False
+                return Overlap(x1, x2, y1, y2)
+            if self.start_y <= claim.end_y <= self.end_y:
+                x1, x2, y1, y2 = self.start_x, claim.end_x, self.start_y, claim.end_y
+
+                return Overlap(x1, x2, y1, y2)
+
+    # def overlap_area(self, claim):
+    #     if self.start_x <= claim.start_x <= self.end_x:
+    #         if self.start_y <= claim.start_y <= self.end_y:
+    #             return (self.end_x - claim.start_x + 1) * (self.end_y - claim.start_y + 1)
+    #         if self.start_y <= claim.end_y <= self.end_y:
+    #             return (self.end_x - claim.start_x + 1) * (claim.end_y - self.start_y + 1)
+    #     if self.start_x <= claim.end_x <= self.end_x:
+    #         if self.start_y <= claim.start_y <= self.end_y:
+    #             return (claim.end_x - self.start_x + 1) * (self.end_y - claim.start_y + 1)
+    #         if self.start_y <= claim.end_y <= self.end_y:
+    #             return (claim.end_x - self.start_x + 1) * (claim.end_y - self.start_y + 1)
+    #
+    #     return 0
 
     def __str__(self):
-        return str([self.id, self.cut_left, self.cut_top, self.width, self.height])
+        return str([self.id, self.cut_left, self.cut_top, self.width, self.height, [self.start_x, self.start_y],
+                    [self.end_x, self.end_y]])
 
 
 def process_input(data):
@@ -142,14 +185,61 @@ def create_claims(data):
 
 
 def calculate_overlaps(claims):
-    overlaps = 0
+    overlaps = []
 
     for i in range(len(claims) - 1):
         for j in range(i+1, len(claims)):
-            if claims[i].is_overlap(claims[j]):
-                overlaps += 1
+            overlap = claims[i].overlap(claims[j])
+            if overlap:
+                overlaps.append(overlap)
 
     return overlaps
+
+
+def initialize_matrix(plans):
+    max_x, max_y = 0, 0
+
+    for plan in plans:
+        if plan.end_x > max_x:
+            max_x = plan.end_x
+        if plan.end_y > max_y:
+            max_y = plan.end_y
+
+    matrix = [[False for j in range(max_x + 1)] for i in range(max_y + 1)]
+
+    return matrix
+
+
+def mapping(plans):
+    matrix = initialize_matrix(plans)
+
+    for plan in plans:
+        for i in range(plan.start_y, plan.end_y + 1):
+            for j in range(plan.start_x, plan.end_x + 1):
+                if not matrix[i][j]:
+                    matrix[i][j] = True
+
+    # for row in matrix:
+    #     row_str = ""
+    #     for cell in row:
+    #         if cell:
+    #             row_str += "x"
+    #         else:
+    #             row_str += "."
+    #     print(row_str)
+
+    return matrix
+
+
+def calculate_overlap_area(matrix):
+    area = 0
+
+    for row in matrix:
+        for cell in row:
+            if cell:
+                area += 1
+
+    return area
 
 
 #######################################################################################################################
@@ -161,10 +251,12 @@ def __main__():
 
     # Your code goes here
     claims = create_claims(process_input(runner.input_data))
-
     overlaps = calculate_overlaps(claims)
 
-    runner.finish([overlaps])
+    matrix = mapping(overlaps)
+    overlap_area = calculate_overlap_area(matrix)
+
+    runner.finish([overlap_area])
 
 
 #######################################################################################################################
