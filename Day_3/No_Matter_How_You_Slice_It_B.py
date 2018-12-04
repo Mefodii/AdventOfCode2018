@@ -50,6 +50,13 @@
 #
 # If the Elves all proceed with their own plans, none of them will have enough fabric. How many square inches of fabric
 # are within two or more claims?
+# --- Part Two ---
+# Amidst the chaos, you notice that exactly one claim doesn't overlap by even a single square inch of fabric with any
+# other claim. If you can somehow draw attention to it, maybe the Elves will be able to make Santa's suit after all!
+#
+# For example, in the claims above, only claim 3 is intact after all claims are made.
+#
+# What is the ID of the only claim that doesn't overlap?
 
 #######################################################################################################################
 # IMPORTS
@@ -101,6 +108,8 @@ class Claim:
 
         self.start_y = cut_top
         self.end_y = cut_top + height - 1
+
+        self.is_overlap = False
 
     def overlap(self, claim):
         if self.start_x <= claim.start_x <= self.end_x:
@@ -177,64 +186,21 @@ def create_claims(data):
     return claims
 
 
-def calculate_overlaps(claims):
-    overlaps = []
-
+def determine_not_overlapped(claims):
     for i in range(len(claims) - 1):
         for j in range(i+1, len(claims)):
             overlap = claims[i].overlap(claims[j])
             if not overlap:
                 overlap = claims[j].overlap(claims[i])
             if overlap:
-                overlaps.append(overlap)
+                claims[i].is_overlap = True
+                claims[j].is_overlap = True
 
-    return overlaps
+    for claim in claims:
+        if not claim.is_overlap:
+            return claim
 
-
-def initialize_matrix(plans):
-    max_x, max_y = 0, 0
-
-    for plan in plans:
-        if plan.end_x > max_x:
-            max_x = plan.end_x
-        if plan.end_y > max_y:
-            max_y = plan.end_y
-
-    matrix = [[False for j in range(max_x + 1)] for i in range(max_y + 1)]
-
-    return matrix
-
-
-def mapping(plans):
-    matrix = initialize_matrix(plans)
-
-    for plan in plans:
-        for i in range(plan.start_y, plan.end_y + 1):
-            for j in range(plan.start_x, plan.end_x + 1):
-                if not matrix[i][j]:
-                    matrix[i][j] = True
-
-    # for row in matrix:
-    #     row_str = ""
-    #     for cell in row:
-    #         if cell:
-    #             row_str += "x"
-    #         else:
-    #             row_str += "."
-    #     print(row_str)
-
-    return matrix
-
-
-def calculate_overlap_area(matrix):
-    area = 0
-
-    for row in matrix:
-        for cell in row:
-            if cell:
-                area += 1
-
-    return area
+    return None
 
 
 #######################################################################################################################
@@ -246,12 +212,9 @@ def __main__():
 
     # Your code goes here
     claims = create_claims(process_input(runner.input_data))
-    overlaps = calculate_overlaps(claims)
+    claim = determine_not_overlapped(claims)
 
-    matrix = mapping(overlaps)
-    overlap_area = calculate_overlap_area(matrix)
-
-    runner.finish([overlap_area])
+    runner.finish([claim.id])
 
 
 #######################################################################################################################
