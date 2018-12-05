@@ -67,6 +67,15 @@
 #
 # What is the ID of the guard you chose multiplied by the minute you chose?
 # (In the above example, the answer would be 10 * 24 = 240.)
+#
+# --- Part Two ---
+# Strategy 2: Of all guards, which guard is most frequently asleep on the same minute?
+#
+# In the example above, Guard #99 spent minute 45 asleep more than any other guard or minute - three times in total.
+# (In all other cases, any guard spent any minute asleep at most twice.)
+#
+# What is the ID of the guard you chose multiplied by the minute you chose? (In the above example, the answer would
+# be 99 * 45 = 4455.)
 
 #######################################################################################################################
 # IMPORTS
@@ -161,22 +170,6 @@ def create_shifts(data):
     return shifts
 
 
-def obtain_most_tired_guard(shifts):
-    guards = {}
-
-    for shift in shifts:
-        guards[shift.guard_id] = guards.get(shift.guard_id, 0) + shift.sleep_time
-
-    guard_id = "0"
-    sleep_time = 0
-    for key, value in guards.items():
-        if value > sleep_time:
-            guard_id = key
-            sleep_time = value
-
-    return guard_id
-
-
 def get_shifts_for_guard(shifts, guard_id):
     shifts_for_guard = []
 
@@ -187,7 +180,7 @@ def get_shifts_for_guard(shifts, guard_id):
     return shifts_for_guard
 
 
-def get_most_asleep_minute(shifts):
+def get_most_asleep_for_guard(shifts):
     most_asleep_minute = 0
     most_asleep_minute_sleep_count = 0
 
@@ -201,7 +194,28 @@ def get_most_asleep_minute(shifts):
             most_asleep_minute = i
             most_asleep_minute_sleep_count = sleep_count
 
-    return most_asleep_minute
+    return {"MINUTE": most_asleep_minute, "COUNT": most_asleep_minute_sleep_count}
+
+
+def get_most_asleep(shifts):
+    most_asleep_guard = "0"
+    most_asleep_minute = 0
+    most_asleep_minute_sleep_count = 0
+
+    guard_list = set([])
+    for shift in shifts:
+        guard_list.add(shift.guard_id)
+
+    for guard in guard_list:
+        shifts_for_guard = get_shifts_for_guard(shifts, guard)
+        most_asleep = get_most_asleep_for_guard(shifts_for_guard)
+
+        if most_asleep["COUNT"] > most_asleep_minute_sleep_count:
+            most_asleep_guard = guard
+            most_asleep_minute = most_asleep["MINUTE"]
+            most_asleep_minute_sleep_count = most_asleep["COUNT"]
+
+    return {"GUARD_ID": most_asleep_guard, "MINUTE": most_asleep_minute}
 
 
 #######################################################################################################################
@@ -215,11 +229,9 @@ def __main__():
     runner.input_data.sort()
     shifts = create_shifts(runner.input_data)
 
-    most_tired_guard = obtain_most_tired_guard(shifts)
-    shifts_for_guard = get_shifts_for_guard(shifts, most_tired_guard)
-    most_asleep_minute = get_most_asleep_minute(shifts_for_guard)
+    most_asleep = get_most_asleep(shifts)
 
-    checksum = int(most_tired_guard) * most_asleep_minute
+    checksum = int(most_asleep["GUARD_ID"]) * most_asleep["MINUTE"]
     runner.finish([checksum])
 
 
