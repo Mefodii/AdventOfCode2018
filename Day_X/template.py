@@ -10,7 +10,7 @@ from utils.helpers import Runner
 #######################################################################################################################
 # CONSTANTS
 #######################################################################################################################
-PARENT_FOLDER_NAME = "Day_1"
+PARENT_FOLDER_NAME = os.path.basename(os.getcwd())
 FILES_NAME = "io"
 INPUT_FILE = "input.txt"
 SAMPLE_FILE = "sample.txt"
@@ -30,7 +30,6 @@ OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTP
 # Main function
 #######################################################################################################################
 def __main__():
-    # BE SURE TO RENAME PARENT_FOLDER_NAME VARIABLE
     runner = Runner(INPUT_PATH, OUTPUT_PATH, debug=True)
 
     # Your code goes here
