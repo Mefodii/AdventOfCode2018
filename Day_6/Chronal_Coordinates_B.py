@@ -60,6 +60,46 @@
 # Your puzzle answer was 4011.
 #
 # The first half of this puzzle is complete! It provides one gold star: *
+#
+# --- Part Two ---
+# On the other hand, if the coordinates are safe, maybe the best you can do is try to find a region near as many
+# coordinates as possible.
+#
+# For example, suppose you want the sum of the Manhattan distance to all of the coordinates to be less than 32.
+# For each location, add up the distances to all of the given coordinates; if the total of those distances is less
+# than 32, that location is within the desired region. Using the same coordinates as above, the resulting region
+# looks like this:
+#
+# ..........
+# .A........
+# ..........
+# ...###..C.
+# ..#D###...
+# ..###E#...
+# .B.###....
+# ..........
+# ..........
+# ........F.
+# In particular, consider the highlighted location 4,3 located at the top middle of the region. Its calculation
+# is as follows, where abs() is the absolute value function:
+#
+# - Distance to coordinate A: abs(4-1) + abs(3-1) =  5
+# - Distance to coordinate B: abs(4-1) + abs(3-6) =  6
+# - Distance to coordinate C: abs(4-8) + abs(3-3) =  4
+# - Distance to coordinate D: abs(4-3) + abs(3-4) =  2
+# - Distance to coordinate E: abs(4-5) + abs(3-5) =  3
+# - Distance to coordinate F: abs(4-8) + abs(3-9) = 10
+# - Total distance: 5 + 6 + 4 + 2 + 3 + 10 = 30
+#
+# Because the total distance to all coordinates (30) is less than 32, the location is within the region.
+#
+# This region, which also includes coordinates D and E, has a total size of 16.
+#
+# Your actual region will need to be much larger than this example, though, instead including all locations with a
+# total distance of less than 10000.
+#
+# What is the size of the region containing all locations which have a total distance to all given coordinates of
+# less than 10000?
 
 #######################################################################################################################
 # IMPORTS
@@ -133,102 +173,31 @@ def get_boundaries(coords):
     return [max_x + 1, max_y + 1]
 
 
-def mark_infinite_points(matrix, coords_dict):
-    infinite_points_id = set([])
-
-    max_y = len(matrix[0]) - 1
-    for x in range(len(matrix)):
-        cell = matrix[x][0]
-        if not cell == ".":
-            infinite_points_id.add(cell)
-        cell = matrix[x][max_y]
-        if not cell == ".":
-            infinite_points_id.add(cell)
-
-    max_x = len(matrix) - 1
-    for y in range(1, len(matrix[0]) - 1):
-        cell = matrix[0][y]
-        if not cell == ".":
-            infinite_points_id.add(cell)
-        cell = matrix[max_x][y]
-        if not cell == ".":
-            infinite_points_id.add(cell)
-
-    for point_id in infinite_points_id:
-        point = coords_dict[point_id]
-        point.is_finite = False
-
-
-def print_matrix(matrix):
-    for y in range(len(matrix[0])):
-        s = ""
-        for x in range(len(matrix)):
-            s += str(matrix[x][y])
-
-        print(s)
-
-
-def map_coords(coords, max_x, max_y):
-    matrix = [["." for j in range(max_y)] for i in range(max_x)]
-
-    for point in coords:
-        matrix[point.x][point.y] = "X"
-
-    return matrix
-
-
-def get_closest_point(coords, x, y):
-    closest_point_id = ""
-    closest_point_distance = 9999
-    distance_equal = False
+def get_distance_sum(coords, x, y):
+    distance_sum = 0
 
     current_point = Point(-1, x, y)
     for point in coords:
         distance = point.dist(current_point)
 
-        if distance < closest_point_distance:
-            closest_point_distance = distance
-            closest_point_id = point.id
-            distance_equal = False
-        elif distance == closest_point_distance:
-            distance_equal = True
+        distance_sum += distance
 
-    if distance_equal:
-        return "."
-    else:
-        return closest_point_id
+    return distance_sum
 
 
-def determine_largest_area(coords):
+def determine_largest_area_withing_distance_sum(coords, distance_sum_limit):
+    area = 0
+
     max_x, max_y = get_boundaries(coords)
 
-    matrix = map_coords(coords, max_x, max_y)
+    for y in range(max_y):
+        for x in range(max_x):
+            distance_sum = get_distance_sum(coords, x, y)
 
-    coords_dict = {}
-    for point in coords:
-        coords_dict[str(point.id)] = point
+            if distance_sum < distance_sum_limit:
+                area += 1
 
-    for y in range(len(matrix[0])):
-        for x in range(len(matrix)):
-            closest_point = get_closest_point(coords, x, y)
-            if not closest_point == ".":
-                point = coords_dict[str(closest_point)]
-                point.increase_area()
-                matrix[x][y] = closest_point
-            else:
-                matrix[x][y] = "."
-
-    print_matrix(matrix)
-
-    mark_infinite_points(matrix, coords_dict)
-
-    largest_area = 0
-    for point in coords:
-        if point.is_finite:
-            if point.area > largest_area:
-                largest_area = point.area
-
-    return largest_area
+    return area
 
 
 #######################################################################################################################
@@ -239,7 +208,9 @@ def __main__():
 
     # Your code goes here
     coords = create_coords(runner.input_data)
-    largest_area = determine_largest_area(coords)
+
+    distance_sum = 10000
+    largest_area = determine_largest_area_withing_distance_sum(coords, distance_sum)
 
     runner.finish([largest_area])
 
