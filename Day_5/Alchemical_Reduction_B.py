@@ -76,18 +76,10 @@ def shrink(record):
 
     while not len(new_value) == len(old_value):
         old_value = new_value
-        new_value = ""
 
-        i = 0
-        while i < (len(old_value) - 1):
-            if old_value[i].lower() == old_value[i + 1].lower() and not old_value[i] == old_value[i + 1]:
-                i += 2
-            else:
-                new_value += old_value[i]
-                i += 1
-
-        if i == (len(old_value) - 1):
-            new_value += old_value[i]
+        for i in "abcdefghijklmnopqrstuvwxyz":
+            new_value = new_value.replace(i + i.upper(), "")
+            new_value = new_value.replace(i.upper() + i, "")
 
     return new_value
 
