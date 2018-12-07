@@ -54,23 +54,12 @@
 #######################################################################################################################
 # IMPORTS
 #######################################################################################################################
-import os
-
-from utils import paths
+from utils.paths import SAMPLE_PATH, INPUT_PATH, OUTPUT_PATH
 from utils.helpers import Runner
 
 #######################################################################################################################
 # CONSTANTS
 #######################################################################################################################
-PARENT_FOLDER_NAME = "Day_3"
-FILES_NAME = "io"
-INPUT_FILE = "input.txt"
-SAMPLE_FILE = "sample.txt"
-OUTPUT_FILE = os.path.basename(__file__)[:-3] + "_output.txt"
-
-SAMPLE_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, SAMPLE_FILE])
-INPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, INPUT_FILE])
-OUTPUT_PATH = "/".join([paths.PROJECT_PATH, PARENT_FOLDER_NAME, FILES_NAME, OUTPUT_FILE])
 
 
 #######################################################################################################################
