@@ -78,32 +78,25 @@ def shrink(record):
         old_value = new_value
 
         for i in "abcdefghijklmnopqrstuvwxyz":
-            new_value = new_value.replace(i + i.upper(), "")
-            new_value = new_value.replace(i.upper() + i, "")
+            new_value = new_value.replace(i + i.upper(), "").replace(i.upper() + i, "")
 
     return new_value
 
 
 def improved_shrink(record):
-    elements = set([])
-    best_shrink = record
-
-    for element in record:
-        elements.add(element.lower())
+    elements = set(record.lower())
+    results = []
 
     current = 0
     end = len(elements)
     for element in elements:
         updated_record = record.replace(element, "").replace(element.upper(), "")
-        result = shrink(updated_record)
-
-        if len(result) < len(best_shrink):
-            best_shrink = result
+        results.append(len(shrink(updated_record)))
 
         current += 1
         print(str(current) + "/" + str(end) + " finished")
 
-    return best_shrink
+    return min(results)
 
 
 #######################################################################################################################
@@ -114,9 +107,9 @@ def __main__():
     runner = Runner(INPUT_PATH, OUTPUT_PATH, debug=True)
 
     # Your code goes here
-    shrunk_result = improved_shrink(runner.input_data[0])
+    shrunk_len = improved_shrink(runner.input_data[0])
 
-    runner.finish([len(shrunk_result)])
+    runner.finish([shrunk_len])
 
 
 #######################################################################################################################
